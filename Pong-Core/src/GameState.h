@@ -4,8 +4,9 @@
 #define PONG_LEVEL_WIDTH               720//1020//720
 #define PONG_LEVEL_HEIGHT              480//200//480
 
-#define PONG_PLAYER_SPEED              5.0f
-#define PONG_BALL_SPEED                5.0f
+#define PONG_PLAYER_SPEED              7.0f
+#define PONG_BALL_X_SPEED              5.0f
+#define PONG_BALL_SPEED                7.0f
 
 namespace pong
 {

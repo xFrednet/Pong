@@ -11,7 +11,7 @@ namespace pong
 	GameState::GameState()
 		: m_BallX((PONG_LEVEL_WIDTH - BALL_SIZE) / 2.0f),
 		m_BallY((PONG_LEVEL_HEIGHT - BALL_SIZE) / 2.0f),
-		m_BallMotionX(PONG_BALL_SPEED / 2), m_BallMotionY(0),
+		m_BallMotionX(PONG_BALL_X_SPEED), m_BallMotionY(0),
 		m_Player1Y((PONG_LEVEL_HEIGHT - PLAYER_HEIGHT) / 2.0f), 
 		m_Player2Y((PONG_LEVEL_HEIGHT - PLAYER_HEIGHT) / 2.0f),
 		m_P1Score(0), m_P2Score(0)
@@ -50,7 +50,7 @@ namespace pong
 			m_BallMotionY *= -1;
 		} else if (m_BallY + BALL_SIZE >= PONG_LEVEL_HEIGHT)
 		{
-			m_BallY = PONG_LEVEL_HEIGHT - BALL_SIZE - (m_BallY - PONG_LEVEL_HEIGHT);
+			m_BallY = PONG_LEVEL_HEIGHT - BALL_SIZE - ((m_BallY + BALL_SIZE) - (PONG_LEVEL_HEIGHT - 1));
 			m_BallMotionY *= -1;
 		}
 
@@ -69,7 +69,7 @@ namespace pong
 		{
 			m_BallX = LEVEL_CENTER;
 			m_P1Score++;
-			m_BallMotionX = PONG_BALL_SPEED / 2;
+			m_BallMotionX = PONG_BALL_X_SPEED;
 
 			if (m_BallMotionY < -PONG_BALL_SPEED)
 				m_BallMotionY = -PONG_BALL_SPEED;
