@@ -2,10 +2,13 @@
 
 #include <GameState.h>
 #include <PongRenderer.h>
+#include <CrappyAI.h>
+
 #include <thread>
 
 using namespace std;
 using namespace pong;
+using namespace cria;
 
 int pixels_[PONG_LEVEL_HEIGHT * PONG_LEVEL_WIDTH];
 
@@ -28,28 +31,29 @@ void getPlayerMoves(int* p1Move, int* p2Move)
 }
 void start()
 {
-	Renderer r(PONG_LEVEL_WIDTH, PONG_LEVEL_HEIGHT);
+	Renderer r(PONG_LEVEL_WIDTH, PONG_LEVEL_HEIGHT, "Pong");
+	
+	NeuronNetwork nNetwork;
 	GameState pong;
 	int player1Move;
 	int player2Move;
 	int u = 0;
 	while (r.updateWindow())
 	{
-		if (u++ % 20)
-		{
-		} else
-		{
-			player1Move = 0;
-			player2Move = 0;
-		}
 		getPlayerMoves(&player1Move, &player2Move);
 
 		pong.update(player1Move, player2Move);
 		pong.draw(pixels_);
 
-		r.loadPixels((char*)pixels_);
-		r.drawTexture();
-		r.swapBuffers();
+		if (true)
+		{
+			nNetwork.processBitmap(pixels_, PONG_LEVEL_WIDTH, PONG_LEVEL_HEIGHT);
+		} else
+		{
+			r.loadPixels((char*)pixels_);
+			r.drawTexture();
+			r.swapBuffers();
+		}
 		
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 	}

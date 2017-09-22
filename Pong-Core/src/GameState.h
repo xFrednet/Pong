@@ -4,9 +4,9 @@
 #define PONG_LEVEL_WIDTH               720//1020//720
 #define PONG_LEVEL_HEIGHT              480//200//480
 
-#define PONG_PLAYER_SPEED              7.0f
-#define PONG_BALL_X_SPEED              5.0f
-#define PONG_BALL_SPEED                7.0f
+#define PONG_PLAYER_SPEED              6.0f
+#define PONG_BALL_X_SPEED              7.0f
+#define PONG_BALL_Y_SPEED              7.0f
 
 namespace pong
 {
@@ -18,7 +18,7 @@ namespace pong
 
 
 		static const int PLAYER_PADDING = 30;
-		static const int PLAYER_WIDTH = 20;
+		static const int PLAYER_WIDTH = 10;
 		static const int PLAYER_HEIGHT = 100;
 		static const int PLAYER_1_X = PLAYER_PADDING;
 		static const int PLAYER_2_X = PONG_LEVEL_WIDTH - PLAYER_PADDING - PLAYER_WIDTH;

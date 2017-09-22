@@ -58,23 +58,21 @@ namespace pong
 		if (m_BallX < 0)
 		{
 			m_BallX = LEVEL_CENTER;
-			m_P2Score++;
-			m_BallMotionX = PONG_BALL_SPEED / -2;
+			m_BallY = PONG_LEVEL_HEIGHT / 2;
 
-			if (m_BallMotionY < -PONG_BALL_SPEED)
-				m_BallMotionY = -PONG_BALL_SPEED;
-			else if (m_BallMotionY > PONG_BALL_SPEED)
-				m_BallMotionY = PONG_BALL_SPEED;
+			m_P2Score++;
+			
+			m_BallMotionX = PONG_BALL_Y_SPEED / -4;
+			m_BallMotionY = 0;
 		} else if (m_BallX + BALL_SIZE >= PONG_LEVEL_WIDTH)
 		{
 			m_BallX = LEVEL_CENTER;
+			m_BallY = PONG_LEVEL_HEIGHT / 2;
+			
 			m_P1Score++;
-			m_BallMotionX = PONG_BALL_X_SPEED;
-
-			if (m_BallMotionY < -PONG_BALL_SPEED)
-				m_BallMotionY = -PONG_BALL_SPEED;
-			else if (m_BallMotionY > PONG_BALL_SPEED)
-				m_BallMotionY = PONG_BALL_SPEED;
+			
+			m_BallMotionX = PONG_BALL_X_SPEED / 4;
+			m_BallMotionY = 0;
 		}
 
 		// 1=>)    2=>(    3=>-    4=>_
@@ -87,8 +85,9 @@ namespace pong
 			relativeContact *= (relativeContact < 0) ? -relativeContact : relativeContact;
 			
 			m_BallMotionY *= -1;
-			m_BallMotionY = PONG_BALL_SPEED * relativeContact;
-			m_BallMotionX *=  (m_BallMotionX < 0) ? -1 : 1;
+			m_BallMotionY = PONG_BALL_Y_SPEED * relativeContact;
+
+			m_BallMotionX = PONG_BALL_X_SPEED;
 		} else if (m_BallX + BALL_SIZE > PLAYER_2_X && m_BallX < PLAYER_2_X + PLAYER_WIDTH && // | |
 			m_BallY + BALL_SIZE > m_Player2Y && m_BallY < m_Player2Y + PLAYER_HEIGHT)
 		{
@@ -97,8 +96,9 @@ namespace pong
 			relativeContact *= (relativeContact < 0) ? -relativeContact : relativeContact;
 
 			m_BallMotionY *= -1;
-			m_BallMotionY = PONG_BALL_SPEED * relativeContact;
-			m_BallMotionX *= (m_BallMotionX < 0) ? 1 : -1;
+			m_BallMotionY = PONG_BALL_Y_SPEED * relativeContact;
+			
+			m_BallMotionX = -PONG_BALL_X_SPEED;
 		}
 	}
 

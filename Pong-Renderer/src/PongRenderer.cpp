@@ -81,9 +81,10 @@ namespace pong
 		return nullptr;
 	}
 
-	Renderer::Renderer(uint width, uint height)
+	Renderer::Renderer(uint width, uint height, char const* className)
 		: m_Width(width),
 		m_Height(height),
+		m_ClassName(className),
 		m_Dev(nullptr), m_DevCon(nullptr),
 		m_VertexShader(nullptr), m_PixelShader(nullptr),
 		m_VertexBuffer(nullptr),
@@ -257,8 +258,8 @@ namespace pong
 		{
 			UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
-#			ifdef _DEBUG
 			creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#			ifdef _DEBUG
 #			endif
 
 			DXGI_SWAP_CHAIN_DESC scd;
@@ -272,7 +273,7 @@ namespace pong
 			scd.BufferDesc.RefreshRate.Denominator = 1;
 			scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			scd.OutputWindow = m_Window;
-			scd.SampleDesc.Count = 1;//TODO add option
+			scd.SampleDesc.Count = 1;
 			scd.SampleDesc.Quality = 0;
 			scd.Windowed = true;
 			scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -381,7 +382,7 @@ namespace pong
 
 		wc.cbSize        = sizeof(WNDCLASSEX);
 		wc.style         = CS_HREDRAW | CS_VREDRAW;
-		wc.lpszClassName = RENDERER_CLASS_NAME;
+		wc.lpszClassName = m_ClassName;
 		wc.lpfnWndProc   = WindowProc;
 
 		RECT size = { 0, 0, LONG(m_Width), LONG(m_Height) };
@@ -390,8 +391,8 @@ namespace pong
 		RegisterClassEx(&wc);
 
 		m_Window = CreateWindowEx(NULL,
-			RENDERER_CLASS_NAME,
-			RENDERER_WINDOW_TITLE,
+			m_ClassName,
+			m_ClassName,
 			style,
 			100,
 			100,
@@ -512,7 +513,7 @@ namespace pong
 
 	void Renderer::swapBuffers() const
 	{
-		m_SwapChain->Present(0, 0);
+		HRESULT hr = m_SwapChain->Present(0, 0);
 	}
 
 	MSG msg_;

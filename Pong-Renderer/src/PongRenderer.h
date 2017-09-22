@@ -1,8 +1,6 @@
 #pragma once
 
 #define PONG_RENDERER_API              __declspec(dllexport)
-#define RENDERER_CLASS_NAME            "PongRenderer"
-#define RENDERER_WINDOW_TITLE          "Renderer xFrednet is the best"
 
 #include <Windows.h>
 
@@ -42,6 +40,7 @@ namespace pong
 		const uint                m_Width;
 		const uint                m_Height;
 		HWND                      m_Window;
+		char const*               m_ClassName;
 
 		//Direct X stuff
 		ID3D11Device*             m_Dev;
@@ -68,7 +67,7 @@ namespace pong
 		ID3D11SamplerState*       m_TextureSampler;
 
 	public:
-		Renderer(uint width, uint height);
+		Renderer(uint width, uint height, char const* className);
 		~Renderer();
 	private:
 		void initDXTextrue();
