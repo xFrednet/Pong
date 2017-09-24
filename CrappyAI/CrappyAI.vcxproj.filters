@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Neuron">
+      <UniqueIdentifier>{905c24b3-46a4-4b26-ae4b-b6bb75260dee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CrappyAI.h">
@@ -21,24 +24,30 @@
     <ClInclude Include="src\Crappy.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CrappyAINodes.h">
+    <ClInclude Include="src\NeuronNetwork.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Neuron.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Neuron</Filter>
     </ClInclude>
-    <ClInclude Include="src\NeuronNetwork.h">
+    <ClInclude Include="src\CrappyAINodes.h">
+      <Filter>Source Files\Neuron</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NetworkCreator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CrappyAINodes.cpp">
+    <ClCompile Include="src\NeuronNetwork.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CrappyAINodes.cpp">
+      <Filter>Source Files\Neuron</Filter>
     </ClCompile>
     <ClCompile Include="src\Neuron.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Neuron</Filter>
     </ClCompile>
-    <ClCompile Include="src\NeuronNetwork.cpp">
+    <ClCompile Include="src\NetworkCreator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

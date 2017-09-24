@@ -3,9 +3,13 @@
 #include "NeuronNetwork.h"
 #include "Neuron.h"
 
+#include <pugixml.hpp>
+
 #include <cassert>
 #include <cmath>
 #include <iostream>
+
+using namespace pugi;
 
 // ####################################
 // # NodeValue #
@@ -14,6 +18,17 @@ namespace cria
 {
 	int int_null_value_ = 0;
 	float float_null_value_ = 0.0f;
+
+	void test_xml_save()
+	{
+		AddNode addAINode(NodeValue(NodeValue::INT_VALUE, 10), NodeValue(NodeValue::FLOAT_VALUE, 12.5f));
+		xml_document xmlDoc;
+		xml_node node = xmlDoc.append_child(CRIA_XML_ELEMENT_AINODE);
+		addAINode.saveToXML(node);
+
+		xmlDoc.save_file("save_test.xml");
+		
+	}
 
 	NodeValue::NodeValue()
 		: NodeValue(INT_VALUE, 0)
@@ -48,7 +63,7 @@ namespace cria
 			m_IntValue = value;
 		} 
 		else {
-			assert(false, "The entered type is unknown.");
+			assert(false);
 			m_Type = INT_VALUE;
 			m_IntValue = 0;
 		}
@@ -141,6 +156,35 @@ namespace cria
 		else if (isIndex())
 			neuron->m_Data[m_IndexValue].set(f, neuron);
 	}
+
+	void NodeValue::saveToXML(xml_node& node, const char* name) const
+	{
+		node.append_attribute(CRIA_XML_ATTRIBUTE_NAME).set_value(name);
+		node.append_attribute(CRIA_XML_ATTRIBUTE_TYPE).set_value(m_Type);
+
+		if (m_Type == INT_VALUE)
+			node.set_value(std::to_string(m_IntValue).c_str());
+		else if (m_Type == FLOAT_VALUE)
+			node.set_value(std::to_string(m_FloatValue).c_str());
+		else if (isIndex())
+			node.set_value(std::to_string(m_IndexValue).c_str());
+		else
+			node.set_value("0");
+	}
+	void NodeValue::loadXML(const xml_node& node)
+	{
+		m_Type = node.attribute(CRIA_XML_ATTRIBUTE_TYPE).as_int(0);
+		const char* valueStr = node.value();
+		
+		if (m_Type == INT_VALUE)
+			m_IntValue = atoi(valueStr);
+		else if (m_Type == FLOAT_VALUE)
+			m_FloatValue = (float)atof(valueStr);
+		else if (isIndex())
+			m_IndexValue = atoi(valueStr);
+		else
+			m_IntValue = 0;
+	}
 }
 
 // ##############################################
@@ -158,15 +202,129 @@ namespace cria {
 
 		return 0;
 	}
+	void Node::append(Node* node)
+	{
+		Node* n = this;
+		while (n->m_Next)
+		{
+			n = n->m_Next;
+		}
+
+		n->m_Next = node;
+	}
+
+
+	void Node::SaveAINodeStack(xml_node& node, Node* aiNode, const char* name)
+	{
+		node.set_name(CRIA_XML_ELEMENT_AINODESTACK);
+		if (strlen(name))
+			node.append_attribute(CRIA_XML_ATTRIBUTE_NAME).set_value(name);
+
+		xml_node n;
+		while (aiNode)
+		{
+			n = node.append_child(CRIA_XML_ELEMENT_AINODE);
+			aiNode->saveToXML(n);
+
+			aiNode = aiNode->m_Next;
+		}
+
+	}
+	Node* Node::LoadAINodeStack(const xml_node& node)
+	{
+		assert(strcmp(node.name(), CRIA_XML_ELEMENT_AINODESTACK));
+
+		if (strcmp(node.name(), CRIA_XML_ELEMENT_AINODESTACK))
+		{
+			Node* aiNodes = nullptr;
+
+			for (xml_node n : node)
+			{
+				if (strcmp(n.name(), CRIA_XML_ELEMENT_AINODE))
+				{
+					if (aiNodes)
+						aiNodes->append(LoadAINode(n));
+					else
+						aiNodes = LoadAINode(n);
+				}
+			}
+
+			return aiNodes;
+		} 
+		if (strcmp(node.name(), CRIA_XML_ELEMENT_AINODE))
+		{
+			return LoadAINode(node);
+		}
+		
+		return nullptr;
+	}
+
+	Node* Node::LoadAINode(const pugi::xml_node& xmlNode)
+	{
+		assert(strcmp(xmlNode.name(), CRIA_XML_ELEMENT_AINODE));
+
+		CRIA_NODE_TYPE type = (CRIA_NODE_TYPE)xmlNode.attribute(CRIA_XML_ATTRIBUTE_TYPE).as_int(0);
+		if (type == 0)
+			return nullptr;
+
+		switch (type)
+		{
+		case CRIA_NODE_ADD: 
+			return new AddNode(xmlNode);
+		case CRIA_NODE_SUBTRACT: 
+			return new SubtractNode(xmlNode);
+		case CRIA_NODE_MULTIPLY: 
+			return new MultiplyNode(xmlNode);
+		case CRIA_NODE_DIVIDE: 
+			return new DivideNode(xmlNode);
+
+		case CRIA_NODE_SET_ACTIVE_SLOT: 
+			return new SetActiveSlotNode(xmlNode);
+		
+		case CRIA_NODE_IF_EQUAL: 
+			return new IfEqualNode(xmlNode);
+		case CRIA_NODE_IF_LESS: 
+			return new IfLessNode(xmlNode);
+		case CRIA_NODE_BREAK_IF_EQUAL: 
+			return new BreakIfEqualNode(xmlNode);
+		case CRIA_NODE_BREAK_IF_LESS:
+			return new BreakIfLessNode(xmlNode);
+		
+		case CRIA_NODE_FOR:
+			return new ForNode(xmlNode);
+
+		case CRIA_NODE_GET_PIXEL: 
+			return new GetPixelNode(xmlNode);
+		default: 
+			return nullptr;
+		}
+	}
 }
 
 // ##############################################
 // # TwoValueNode #
 // ##############################################
 namespace cria {
+
 	TwoValueNode::TwoValueNode(const NodeValue& var1, const NodeValue& var2)
 		:m_Var1(var1), m_Var2(var2)
 	{
+	}
+
+	TwoValueNode::TwoValueNode(const xml_node& node)
+		: m_Var1(NodeValue::INT_VALUE, 0), 
+		m_Var2(NodeValue::INT_VALUE, 2)
+	{
+		for (xml_node n : node) {
+			if (strcmp(n.name(), CRIA_XML_ELEMENT_AINODEVALUE)) {
+				const char* name = n.attribute(CRIA_XML_ATTRIBUTE_NAME).as_string();
+
+				if (strcmp(name, "Var1"))
+					m_Var1.loadXML(n);
+				else if (strcmp(name, "Var2"))
+					m_Var2.loadXML(n);
+			}
+		}
 	}
 
 	node_return TwoValueNode::beCrappy(Neuron* neuron)
@@ -190,6 +348,17 @@ namespace cria {
 		
 		return 0;
 	}
+
+	void TwoValueNode::saveToXML(pugi::xml_node& node)
+	{
+		node.set_name(CRIA_XML_ELEMENT_AINODE);
+		node.append_attribute(CRIA_XML_ATTRIBUTE_TYPE).set_value(std::to_string(getType()).c_str());
+
+		xml_node varNode = node.append_child(CRIA_XML_ELEMENT_AINODEVALUE);
+		m_Var1.saveToXML(varNode, "Var1");
+		varNode = node.append_child(CRIA_XML_ELEMENT_AINODEVALUE);
+		m_Var2.saveToXML(varNode, "Var2");
+	}
 }
 // ##############################################
 // # BaseIfNode #
@@ -201,6 +370,23 @@ namespace cria
 		m_ActionOnTrue(trueAction),
 		m_ActionOnFalse(falseAction)
 	{
+	}
+
+	BaseIfNode::BaseIfNode(const pugi::xml_node& node)
+		: TwoValueNode(node),
+		m_ActionOnTrue(nullptr),
+		m_ActionOnFalse(nullptr)
+	{
+		for (xml_node n : node) {
+			if (strcmp(n.name(), CRIA_XML_ELEMENT_AINODESTACK)) {
+				const char* name = n.attribute(CRIA_XML_ATTRIBUTE_NAME).as_string();
+
+				if (strcmp(name, "TrueNodes"))
+					m_ActionOnTrue = LoadAINodeStack(n);
+				else if (strcmp(name, "FalseNodes"))
+					m_ActionOnFalse = LoadAINodeStack(n);
+			}
+		}
 	}
 
 	node_return BaseIfNode::activateTrueNode(Neuron* neuron)
@@ -216,6 +402,25 @@ namespace cria
 			return m_ActionOnFalse->callStack(neuron);
 
 		return 0;
+	}
+
+	void BaseIfNode::saveToXML(xml_node& node)
+	{
+		TwoValueNode::saveToXML(node);
+
+		node.set_name(CRIA_XML_ELEMENT_AINODE);
+		node.append_attribute(CRIA_XML_ATTRIBUTE_TYPE).set_value(std::to_string(getType()).c_str());
+
+		xml_node n;
+		if (m_ActionOnTrue)
+		{
+			n = node.append_child();
+			SaveAINodeStack(n, m_ActionOnTrue, "TrueNodes");
+		}
+		if (m_ActionOnFalse) {
+			n = node.append_child();
+			SaveAINodeStack(n, m_ActionOnFalse, "FalseNodes");
+		}
 	}
 }
 
@@ -312,6 +517,22 @@ namespace cria {
 	{
 	}
 
+	SetActiveSlotNode::SetActiveSlotNode(const pugi::xml_node& node)
+		: m_Slot(NodeValue::INT_VALUE, 0)
+	{
+		for (xml_node n : node) {
+			if (strcmp(n.name(), CRIA_XML_ELEMENT_AINODEVALUE)) {
+				const char* name = n.attribute(CRIA_XML_ATTRIBUTE_NAME).as_string();
+
+				if (strcmp(name, "Slot"))
+				{
+					m_Slot.loadXML(n);
+					break;
+				}
+			}
+		}
+	}
+
 	node_return SetActiveSlotNode::beCrappy(Neuron* neuron)
 	{
 		int i = m_Slot.getAsInt(neuron);
@@ -323,6 +544,15 @@ namespace cria {
 		neuron->m_ActiveDataIndex = i;
 
 		return 0;
+	}
+
+	void SetActiveSlotNode::saveToXML(xml_node& node)
+	{
+		node.set_name(CRIA_XML_ELEMENT_AINODE);
+		node.append_attribute(CRIA_XML_ATTRIBUTE_TYPE).set_value(std::to_string(getType()).c_str());
+
+		xml_node n = node.append_child();
+		m_Slot.saveToXML(n, "Slot");
 	}
 }
 
@@ -438,6 +668,34 @@ namespace cria {
 			std::cout << "ForNode the index write location should be an data index" << std::endl;
 	}
 
+	ForNode::ForNode(const pugi::xml_node& node)
+		: m_Start(NodeValue::INT_VALUE, 0),
+		m_Limit(NodeValue::INT_VALUE, 0),
+		m_Incrementer(NodeValue::INT_VALUE, 0),
+		m_IndexWriteLoc(NodeValue::INT_VALUE, 0),
+		m_ActionNodes(nullptr)
+	{
+		for (xml_node n : node) {
+			if (strcmp(n.name(), CRIA_XML_ELEMENT_AINODEVALUE)) {
+				const char* name = n.attribute(CRIA_XML_ATTRIBUTE_NAME).as_string();
+
+				if (strcmp(name, "Start"))
+					m_Start.loadXML(n);
+				else if (strcmp(name, "Limit"))
+					m_Limit.loadXML(n);
+				else if (strcmp(name, "Incrementer"))
+					m_Incrementer.loadXML(n);
+				else if (strcmp(name, "IndexWriteLoc"))
+					m_IndexWriteLoc.loadXML(n);
+
+			} else if (strcmp(n.name(), CRIA_XML_ELEMENT_AINODESTACK) && !m_ActionNodes)
+			{
+				m_ActionNodes = LoadAINodeStack(n);
+
+			}
+		}
+	}
+
 	node_return ForNode::beCrappy(Neuron* neuron)
 	{
 		if (!m_ActionNodes)
@@ -463,6 +721,24 @@ namespace cria {
 		}
 		return 0;
 	}
+
+	void ForNode::saveToXML(pugi::xml_node& node)
+	{
+		node.set_name(CRIA_XML_ELEMENT_AINODE);
+		node.append_attribute(CRIA_XML_ATTRIBUTE_TYPE).set_value(std::to_string(getType()).c_str());
+
+		xml_node varNode = node.append_child();
+		m_Start.saveToXML(varNode, "Start");
+		varNode = node.append_child();
+		m_Limit.saveToXML(varNode, "Limit");
+		varNode = node.append_child();
+		m_Incrementer.saveToXML(varNode, "Incrementer");
+		varNode = node.append_child();
+		m_IndexWriteLoc.saveToXML(varNode, "IndexWriteLoc");
+
+		xml_node stackNode = node.append_child();
+		SaveAINodeStack(stackNode, m_ActionNodes);
+	}
 }
 
 // ##############################################
@@ -470,16 +746,13 @@ namespace cria {
 // ##############################################
 namespace cria {
 	GetPixelNode::GetPixelNode(NodeValue testX, NodeValue testY)
-		: m_TestX(testX),
-		m_TestY(testY)
+		: TwoValueNode(testX, testY)
 	{
 	}
 
-	node_return GetPixelNode::beCrappy(Neuron* neuron)
+	node_return GetPixelNode::beCrappyInt(int x, int y, Neuron* neuron)
 	{
 		NeuronNetwork* network = neuron->getNetwork();
-		int x = m_TestX.getAsInt(neuron);
-		int y = m_TestY.getAsInt(neuron);
 
 		if (x < 0 || x >= network->getBitmapWidth() || y < 0 || y >= network->getBitmapHeight())
 			return 0;
@@ -487,5 +760,9 @@ namespace cria {
 		int p = network->getBitmap()[x + y * network->getBitmapWidth()];
 		neuron->getActiveData()->reset(NodeValue::INT_VALUE, p);
 		return p;
+	}
+	node_return GetPixelNode::beCrappyFloat(float a, float b, Neuron* neuron)
+	{
+		return beCrappyInt((int)a, (int)b, neuron);
 	}
 }

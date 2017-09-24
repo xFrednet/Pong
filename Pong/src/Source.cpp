@@ -63,7 +63,10 @@ int main()
 {
 	cout << "Hello" << endl;
 
-	start();
+	cria::test_xml_save();
+	
+	//start();
 
+	cin.get();
 	return 0;
 }
