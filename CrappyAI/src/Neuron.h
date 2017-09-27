@@ -3,7 +3,7 @@
 #include "Crappy.h"
 #include "CrappyAINodes.h"
 
-#define NEURON_DATA_LENGTH                       8
+#define CRIA_NEURON_DATA_LENGTH                       8
 
 namespace cria
 {
@@ -16,7 +16,7 @@ namespace cria
 		friend class SetActiveSlotNode;
 	private:
 		int m_ActiveDataIndex = 0;
-		NodeValue m_Data[NEURON_DATA_LENGTH];
+		NodeValue m_Data[CRIA_NEURON_DATA_LENGTH];
 
 		Node* m_Nodes;
 

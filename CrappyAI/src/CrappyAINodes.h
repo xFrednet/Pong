@@ -2,6 +2,8 @@
 
 #include "Crappy.h"
 
+#define CRIA_NODE_FOR_LOOP_MAX_COUNT            1000
+
 #define CRIA_XML_ELEMENT_AINODESTACK            "AINodeStack"
 #define CRIA_XML_ELEMENT_AINODE                 "AINode"
 #define CRIA_XML_ATTRIBUTE_TYPE                 "type"
@@ -65,8 +67,8 @@ namespace cria {
 
 		ValueType m_Type;
 
-		NodeValue();
 	public:
+		NodeValue();
 		NodeValue(ValueType type, int value);
 		NodeValue(ValueType type, float value);
 

@@ -11,7 +11,7 @@ namespace cria
 
 	NodeValue* Neuron::getActiveData()
 	{
-		if (m_ActiveDataIndex > 0 || m_ActiveDataIndex < NEURON_DATA_LENGTH)
+		if (m_ActiveDataIndex > 0 || m_ActiveDataIndex < CRIA_NEURON_DATA_LENGTH)
 			return &m_Data[m_ActiveDataIndex];
 
 		return nullptr;

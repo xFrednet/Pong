@@ -52,7 +52,7 @@ namespace cria
 			if (value < 0)
 				value = 0;
 			else
-				value = NEURON_DATA_LENGTH - 1;
+				value = CRIA_NEURON_DATA_LENGTH - 1;
 
 			m_Type = type;
 			m_IndexValue = value;
@@ -538,8 +538,8 @@ namespace cria {
 		int i = m_Slot.getAsInt(neuron);
 		if (i < 0)
 			i = 0;
-		else if (i >= NEURON_DATA_LENGTH)
-			i = NEURON_DATA_LENGTH - 1;
+		else if (i >= CRIA_NEURON_DATA_LENGTH)
+			i = CRIA_NEURON_DATA_LENGTH - 1;
 
 		neuron->m_ActiveDataIndex = i;
 
@@ -700,13 +700,18 @@ namespace cria {
 	{
 		if (!m_ActionNodes)
 			return 0;
+		if (m_Incrementer.getAsInt(neuron) <= 0)
+			return -1;
 
 		Node* n;
 		int limit = m_Limit.getAsInt(neuron);
+		int j = 0;
 		for (int i = m_Start.getAsInt(neuron); i < limit; i += m_Incrementer.getAsInt(neuron))
 		{
+			//write index
 			m_IndexWriteLoc.set(i, neuron);
 
+			//action nodes
 			n = m_ActionNodes;
 			while (n) {
 				if (n->getType() == CRIA_NODE_BREAK_IF_EQUAL || n->getType() == CRIA_NODE_BREAK_IF_LESS) {
@@ -718,6 +723,10 @@ namespace cria {
 				}
 				n = n->m_Next;
 			}
+
+			//test for j
+			if (++j >= CRIA_NODE_FOR_LOOP_MAX_COUNT)
+				return -1;
 		}
 		return 0;
 	}
